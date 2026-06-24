@@ -1,19 +1,19 @@
 {
   "personas": [
+    { "name": "Secretaria", "role": "secretaria", "primary": true },
     { "name": "Desarrollador", "role": "desarrollador", "primary": true },
-    { "name": "Rectora",       "role": "rectora",       "primary": true },
-    { "name": "Secretaria",    "role": "secretaria",    "primary": true }
+    { "name": "Rectora", "role": "rectora", "primary": true },
+    { "name": "Docente", "role": "docente", "primary": false }
   ],
   "pains": [
-    { "id": "sp-no-mantenibles",                  "source": "desarrollador.md", "persona": "Desarrollador" },
-    { "id": "plantillas-no-dinamicas",             "source": "desarrollador.md", "persona": "Desarrollador" },
-    { "id": "rdlc-por-curso",                      "source": "desarrollador.md", "persona": "Desarrollador" },
-    { "id": "informacion-no-centralizada",         "source": "rectora.md",       "persona": "Rectora"       },
-    { "id": "documentos-urgentes-sin-entregar",    "source": "rectora.md",       "persona": "Rectora"       },
-    { "id": "dos-sistemas-duplicados",             "source": "rectora.md",       "persona": "Rectora"       },
-    { "id": "cambio-dana-otro-reporte",            "source": "secretaria.md",    "persona": "Secretaria"    },
-    { "id": "proceso-requerimientos-sin-claridad", "source": "secretaria.md",    "persona": "Secretaria"    },
-    { "id": "nombres-materias-quemados",           "source": "secretaria.md",    "persona": "Secretaria"    },
-    { "id": "formato-reporte-inadecuado",          "source": "secretaria.md",    "persona": "Secretaria"    }
+    { "id": "materias-quemadas", "source": "secretaria.md", "persona": "Secretaria" },
+    { "id": "inconsistencia-bd", "source": "rectora.md", "persona": "Rectora" },
+    { "id": "sp-no-mantenibles", "source": "desarrollador.md", "persona": "Desarrollador" },
+    { "id": "rdlc-por-curso", "source": "desarrollador.md", "persona": "Desarrollador" },
+    { "id": "reportes-no-dinamicos", "source": "desarrollador.md", "persona": "Desarrollador" },
+    { "id": "reproceso-sin-proceso-de-requerimiento", "source": "secretaria.md", "persona": "Secretaria" },
+    { "id": "documentos-urgentes-cierre-ano", "source": "rectora.md", "persona": "Rectora" },
+    { "id": "plantillas-word-quemadas-promociones", "source": "secretaria.md", "persona": "Secretaria" },
+    { "id": "doble-sistema-ineficiencia", "source": "rectora.md", "persona": "Rectora" }
   ]
 }
