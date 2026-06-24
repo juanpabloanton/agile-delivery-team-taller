@@ -162,14 +162,31 @@ def build(delivery_dir):
     if sprint:
         A('<h2>Sprint Plan</h2>')
         A('<div class="sprint">')
-        A(f'<h3>{esc(sprint.get("sprint_goal",""))}</h3>')
-        A(f'<div class="sub mono" style="margin-top:6px">capacidad {sprint.get("capacity","?")} pts · comprometido {sprint.get("committed","?")} pts</div>')
+        # Soporta formato plano {sprint_goal, capacity, committed, stories:[ids]}
+        # y formato anidado {sprint:{goal, capacity_points, committed_points}, stories:[objs]}
+        meta = sprint.get("sprint", sprint)
+        goal = meta.get("goal") or sprint.get("sprint_goal", "")
+        capacity = meta.get("capacity_points") or sprint.get("capacity", "?")
+        committed = meta.get("committed_points") or sprint.get("committed", "?")
+        A(f'<h3>{esc(goal)}</h3>')
+        A(f'<div class="sub mono" style="margin-top:6px">capacidad {capacity} pts · comprometido {committed} pts</div>')
         sel = sprint.get("stories", [])
         smap = {s.get("id"): s for s in stories}
         A('<table><thead><tr><th>Historia</th><th>Pts</th><th>Épica</th></tr></thead><tbody>')
-        for sid in sel:
-            s = smap.get(sid, {})
-            A(f'<tr><td>{esc(sid)} · {esc(s.get("want",""))}</td><td>{esc(s.get("estimate","?"))}</td><td>{esc(s.get("epic",""))}</td></tr>')
+        for item in sel:
+            if isinstance(item, dict):
+                sid = item.get("id", "")
+                bl = smap.get(sid, {})
+                pts = bl.get("estimate") or item.get("points", "?")
+                epic = bl.get("epic") or item.get("epic", "")
+                want = bl.get("want") or item.get("title", "")
+            else:
+                sid = item
+                bl = smap.get(sid, {})
+                pts = bl.get("estimate", "?")
+                epic = bl.get("epic", "")
+                want = bl.get("want", "")
+            A(f'<tr><td>{esc(sid)} · {esc(want)}</td><td>{esc(pts)}</td><td>{esc(epic)}</td></tr>')
         A('</tbody></table></div>')
 
     A(f'<div class="foot">Generado por <span class="mono">build-report.py</span> desde '

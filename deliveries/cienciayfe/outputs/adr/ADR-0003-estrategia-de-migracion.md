@@ -1,37 +1,71 @@
-# ADR-0003 · Migración incremental con validación en copia local antes de aplicar en producción
+# ADR-0003 — Estrategia de migración: datos frescos para el MVP 2025-2026
 
-**Estado:** aceptado  
-**Fecha:** 2026-06-23
+- **Estado:** Aceptado
+- **Fecha:** 2026-06-24
+- **Autores:** Architect · Agile Delivery Team
 
-## Contexto y fuerza
+## Contexto
 
-El supuesto SA-02 de US-06a (`stories.md`) identifica la migración de datos como "el riesgo mayor del MVP": las calificaciones del período 2025-2026 están distribuidas en el esquema fragmentado actual y deben trasladarse íntegramente al esquema centralizado sin pérdida ni corrupción, bajo presión de tiempo (`mvp-canvas.md` · riesgos·1). El MVP canvas describe este supuesto de migración como "el de mayor riesgo" y advierte que debe ser "limpia y completa" (`mvp-canvas.md` · riesgos·1).
+El MVP Canvas del Colegio Ciencia y Fe documenta explícitamente en su bloque de
+riesgos y supuestos: "La BD actual puede migrarse a un esquema centralizado sin
+pérdida de datos históricos de calificaciones". Esta afirmación es un supuesto
+no validado: no existe en el inbox ninguna evidencia de entrevista, script de
+migración ni análisis del esquema legado que confirme que la migración es segura.
 
-Hay dos agravantes concretos documentados en el discovery:
+La historia `us:US-07` (prerequisito técnico de todas las demás) incluye en su
+campo `notes` la decisión de que "el ciclo 2025-2026 parte con datos frescos
+registrados directamente en el esquema centralizado. La migración de históricos
+es un supuesto abierto documentado como riesgo en architecture.md".
 
-1. La calidad del esquema fragmentado es incierta: los stored procedures tienen hasta 30 000 líneas con lógica enredada (`personas.md` · Desarrollador · `pain:sp-no-mantenibles`), lo que implica que los datos pueden tener inconsistencias acumuladas.
-2. No existe ambiente de staging formal (supuesto SA-01, `stories.md`); el único entorno disponible para pruebas es una copia local de la base de datos de producción.
-
-La historia US-06a exige que: el 100 % de registros del período 2025-2026 estén presentes en el esquema centralizado al finalizar; los recuentos por curso coincidan entre esquema antiguo y nuevo; no se registren errores de integridad referencial; y la secretaria valide una muestra de calificaciones antes de dar el visto bueno final (`stories.md` · US-06a).
+El equipo tiene dos desarrolladores y el ciclo 2025-2026 tiene una fecha de
+cierre fija. Una migración de datos históricos mal ejecutada puede corromper los
+registros de ciclos anteriores y bloquear la operación del colegio.
 
 ## Decisión
 
-La migración se ejecuta en dos fases secuenciales y separadas:
+El MVP 2025-2026 arranca con el esquema centralizado vacío. Todos los datos del
+ciclo 2025-2026 (niveles, cursos, períodos, materias, estudiantes, calificaciones)
+se ingresan directamente en el nuevo esquema desde el inicio del ciclo. Los datos
+históricos de ciclos anteriores permanecen accesibles en el sistema legado tal
+como están hoy, sin ser migrados, hasta que se valide un proceso de migración
+formal en una segunda fase fuera del alcance del MVP.
 
-1. **Fase de validación previa (antes de tocar producción):** el desarrollador ejecuta un script de auditoría sobre una copia local de la base de datos de producción. El script identifica y reporta registros con datos vacíos, valores fuera de rango o inconsistencias de integridad referencial. El desarrollador limpia y normaliza esos registros antes de proceder. El criterio de salida de esta fase es un log de auditoría sin errores críticos.
-
-2. **Fase de migración y verificación:** se ejecuta el script de migración sobre la copia local validada y, una vez que los recuentos por curso coinciden entre esquema antiguo y nuevo, se aplica en producción fuera del horario de uso del sistema. La secretaria revisa una muestra representativa de calificaciones del período 2025-2026 en el esquema centralizado antes de que el equipo declare US-06a como terminada.
-
-Las tablas del esquema fragmentado no se eliminan hasta que los reportes del período 2025-2026 hayan sido aprobados y enviados al distrito, como red de seguridad de reversión.
+Esta decisión elimina el riesgo de pérdida de datos históricos y permite al equipo
+entregar el sistema funcional antes del cierre del ciclo sin bloqueos por
+dependencias de datos del pasado.
 
 ## Alternativas consideradas
 
-- **Migración en un solo paso directo a producción sin validación previa** — Inaceptable dado el riesgo documentado de inconsistencias en el esquema actual (`pain:sp-no-mantenibles`) y la ausencia de staging (`SA-01`); un fallo en producción durante el cierre de período equivale a pérdida de datos críticos para el distrito.
-- **Migración paralela: mantener los dos esquemas activos simultáneamente y sincronizarlos** — La dualidad de escritura requiere lógica de sincronización adicional que aumenta la complejidad sin reducir el riesgo en el plazo del MVP; el mvp-canvas no contempla esta complejidad y el equipo de dos personas no tiene capacidad para implementarla junto con el módulo de reportes (`mvp-canvas.md` · riesgos·2).
-- **Delegar la limpieza de datos a la secretaria antes de la migración** — La secretaria no tiene acceso ni conocimiento del esquema de base de datos; el discovery la describe como responsable de validar la información presentada en los reportes, no los datos en bruto. La validación técnica es responsabilidad del desarrollador (SA-02, `stories.md`).
+| Alternativa | Por qué se descartó |
+|-------------|---------------------|
+| Migración completa de históricos antes del MVP | Riesgo no aceptable: no hay evidencia de que el esquema legado sea estructuralmente compatible con el nuevo esquema centralizado. Un error en la migración bloquea el ciclo escolar. Requiere tiempo de análisis y validación que no está disponible antes de la fecha de cierre. |
+| Convivencia de esquema viejo y nuevo durante el MVP | Duplica la inconsistencia que se quiere eliminar. Requiere mantener dos fuentes de datos activas, lo que significa que los SPs deben decidir de cuál leer: esto reproduce exactamente `pain:inconsistencia-bd` en otra forma. |
+| Migración parcial (solo ciclo anterior) | Introduce un estado híbrido sin beneficio claro: el colegio no necesita reportes del ciclo anterior desde el nuevo sistema para cumplir el objetivo del MVP 2025-2026. |
 
 ## Consecuencias
 
-**Ganamos:** control explícito del riesgo más alto del MVP antes de afectar producción; trazabilidad completa (log de auditoría previo y log de migración); la secretaria tiene voz formal en la aceptación de la migración (SA-02), lo que reduce el riesgo de devoluciones post-entrega por calificaciones incorrectas; las tablas antiguas quedan disponibles como respaldo hasta el cierre del período.
+**Positivas:**
+- El equipo puede arrancar el desarrollo del ciclo 2025-2026 sin bloqueo por
+  análisis de datos históricos.
+- No hay riesgo de pérdida de calificaciones históricas: el sistema legado las
+  conserva intactas.
+- Los reportes del ciclo 2025-2026 son 100 % coherentes desde el primer día
+  porque todos los datos provienen del esquema centralizado.
 
-**Aceptamos:** la fase de validación previa añade tiempo de esfuerzo (estimado como parte de los 5 puntos de US-06a); la ejecución fuera de horario implica coordinación con la institución para garantizar ventana de mantenimiento; el script de auditoría debe ser escrito y mantenido por el desarrollador, lo que es un esfuerzo adicional no menor. La ausencia de staging formal (SA-01) queda como deuda de infraestructura para ciclos futuros.
+**Negativas / riesgos:**
+- Los reportes de ciclos anteriores al 2025-2026 solo son accesibles desde el
+  sistema legado mientras no se ejecute la segunda fase de migración. El colegio
+  debe mantener el sistema legado operativo en paralelo por el tiempo que
+  necesite acceder a esos históricos.
+- La carga inicial de datos del ciclo 2025-2026 (materias, cursos, estudiantes)
+  en el esquema centralizado es una tarea manual o semi-automatizada que debe
+  planificarse antes del inicio del ciclo. No está estimada en el backlog actual.
+- Si el Ministerio de Educación solicita reportes históricos consolidados que
+  crucen datos de ciclos anteriores con el 2025-2026, esa consulta no será
+  posible desde el nuevo sistema hasta que se ejecute la migración.
+
+## Trazabilidad
+
+- Origina: MVP Canvas — Riesgos/supuestos ítem 1 · `us:US-07` (campo
+  `open_questions` y `notes`) · `pain:inconsistencia-bd`
+- Impacta: US-07 (desfuerza el bloqueo de migración como prerequisito), E-01

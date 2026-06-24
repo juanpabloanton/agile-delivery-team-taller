@@ -1,8 +1,62 @@
 {
-  "sprint": 1,
-  "sprint_goal": "Centralizar los datos y la plantilla base para poder generar el primer reporte del período 2025-2026 sin dependencias del esquema fragmentado",
-  "capacity": 20,
-  "committed": 20,
-  "stories": ["US-06", "US-06a", "US-01", "US-05", "US-04"],
-  "deferred": ["US-08", "US-02", "US-03", "US-07"]
+  "sprint": {
+    "number": 1,
+    "goal": "Al final del sprint, la Secretaria puede generar cuadros de calificaciones trimestrales y finales con nombres de materias leidos desde la base de datos centralizada, eliminando los errores de nomenclatura que hoy causan devoluciones del distrito.",
+    "capacity_points": 20,
+    "committed_points": 18,
+    "start_date": "2026-06-24",
+    "end_date": "2026-07-07"
+  },
+  "stories": [
+    {
+      "id": "US-07",
+      "title": "Esquema unificado de calificaciones en la BD",
+      "epic": "E-01",
+      "points": 8,
+      "priority": 1,
+      "rationale": "Prerequisito tecnico absoluto: sin el esquema centralizado ningun otro reporte puede leer datos coherentes. Es la base de todo el MVP y la primera historia del backlog por prioridad. No tiene dependencias. Su inclusion es no negociable para cualquier sprint que busque entregar valor de E-02."
+    },
+    {
+      "id": "US-01",
+      "title": "Cuadro de calificaciones trimestral con nombres desde la BD",
+      "epic": "E-02",
+      "points": 5,
+      "priority": 2,
+      "rationale": "Segunda historia por prioridad. Depende de US-07, que entra en este mismo sprint. Entrega el primer documento de cierre que usa la Secretaria: el cuadro trimestral con nombres de materias desde la BD. Junto con US-07, representa el nucleo observable del outcome del MVP para el equipo del colegio."
+    },
+    {
+      "id": "US-02",
+      "title": "Cuadro de calificaciones final coherente con los trimestrales",
+      "epic": "E-02",
+      "points": 5,
+      "priority": 3,
+      "rationale": "Tercera historia por prioridad. Depende de US-07 y US-01, ambas incluidas en este sprint. Completa el par de cuadros de calificaciones (trimestral + final), que son los documentos de mayor frecuencia de entrega al distrito. Con US-07 + US-01 + US-02 se alcanza 18 pts, dentro de la capacidad de 20 pts. US-05 (prioridad 4, 3 pts) elevan el total a 21 pts, superando la capacidad; por eso US-02 es el corte natural."
+    }
+  ],
+  "not_committed": [
+    {
+      "id": "US-05",
+      "title": "Escala de calificacion automatica por nivel",
+      "points": 3,
+      "reason": "Supera la capacidad del sprint: 18 pts comprometidos + 3 pts = 21 pts, excede el limite de 20 pts. Ademas, architecture.md registra un supuesto abierto sobre si el Colegio Ciencia y Fe aplica exactamente la escala MINEDUC o tiene variaciones propias, lo que hace conveniente validar ese punto antes del desarrollo. Candidata para Sprint 2."
+    },
+    {
+      "id": "US-03",
+      "title": "Reporte de promociones con nombres de materias desde la BD",
+      "points": 5,
+      "reason": "No entra en el Sprint 1 porque la capacidad ya esta comprometida con US-07, US-01 y US-02. Depende de US-07 (que si entra), por lo que sus dependencias estaran resueltas al inicio del Sprint 2. Candidata para Sprint 2."
+    },
+    {
+      "id": "US-04",
+      "title": "Espacios de firma y sello en todos los reportes",
+      "points": 2,
+      "reason": "No entra en el Sprint 1 por capacidad comprometida. Depende de US-07 (que entra en Sprint 1), por lo que sus dependencias estaran resueltas al inicio del Sprint 2. De bajo riesgo tecnico; puede desarrollarse en paralelo con US-03 en Sprint 2."
+    },
+    {
+      "id": "US-06",
+      "title": "Plantilla de reporte parametrizada y compartida por todos los cursos",
+      "points": 6,
+      "reason": "No entra en el Sprint 1 por capacidad comprometida. Es la historia de menor prioridad del backlog (prioridad 7) y aunque aporta mantenibilidad a largo plazo, no bloquea la entrega de los reportes de cierre del ciclo. Candidata para Sprint 2 o 3 segun capacidad."
+    }
+  ]
 }
