@@ -1,0 +1,8 @@
+{
+  "sprint": 1,
+  "sprint_goal": "Centralizar los datos y la plantilla base para poder generar el primer reporte del período 2025-2026 sin dependencias del esquema fragmentado",
+  "capacity": 20,
+  "committed": 20,
+  "stories": ["US-06", "US-06a", "US-01", "US-05", "US-04"],
+  "deferred": ["US-08", "US-02", "US-03", "US-07"]
+}

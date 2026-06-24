@@ -1,0 +1,322 @@
+{
+  "delivery": "cienciayfe",
+  "generated_at": "2026-06-23",
+  "epics": [
+    {
+      "id": "E-01",
+      "title": "Esquema de datos centralizado de calificaciones",
+      "value": "El desarrollador consulta calificaciones de cualquier curso desde una única tabla, eliminando SPs duplicados; la rectora obtiene datos consistentes en todos los reportes del período.",
+      "priority": 1,
+      "origin": [
+        "mvp:funcionalidades-minimas·1",
+        "mvp:riesgos·1",
+        "req:R-04",
+        "us:US-06",
+        "pain:informacion-no-centralizada",
+        "pain:sp-no-mantenibles"
+      ]
+    },
+    {
+      "id": "E-02",
+      "title": "Generación de reportes consistentes y sin devoluciones",
+      "value": "La secretaria aprueba cuadros trimestrales, finales y reportes de promoción en el primer ciclo de revisión, con cero devoluciones por inconsistencias de nombres de materias o datos entre documentos.",
+      "priority": 2,
+      "origin": [
+        "mvp:propuesta-valor",
+        "mvp:resultado-esperado",
+        "mvp:metrica-exito",
+        "req:R-01",
+        "req:R-02",
+        "us:US-01",
+        "us:US-02",
+        "us:US-07",
+        "pain:nombres-materias-quemados",
+        "pain:cambio-dana-otro-reporte"
+      ]
+    },
+    {
+      "id": "E-03",
+      "title": "Plantilla única y mantenible de reportes",
+      "value": "El desarrollador modifica la configuración de reportes en un único punto y el cambio se propaga a todos los cursos, sin tocar archivos RDLC individuales.",
+      "priority": 3,
+      "origin": [
+        "mvp:funcionalidades-minimas·2",
+        "mvp:funcionalidades-minimas·3",
+        "req:R-03",
+        "req:R-11",
+        "us:US-05",
+        "pain:rdlc-por-curso",
+        "pain:plantillas-no-dinamicas"
+      ]
+    },
+    {
+      "id": "E-04",
+      "title": "Formato de reporte conforme a requisitos del distrito",
+      "value": "La secretaria puede enviar reportes directamente al distrito sin ediciones manuales; la rectora cumple los compromisos formales del período 2025-2026.",
+      "priority": 4,
+      "origin": [
+        "mvp:funcionalidades-minimas·4",
+        "mvp:funcionalidades-minimas·5",
+        "req:R-05",
+        "req:R-06",
+        "req:R-10",
+        "us:US-03",
+        "us:US-04",
+        "us:US-08",
+        "pain:formato-reporte-inadecuado",
+        "pain:documentos-urgentes-sin-entregar"
+      ]
+    }
+  ],
+  "stories": [
+    {
+      "id": "US-06",
+      "epic": "E-01",
+      "as_a": "desarrollador",
+      "want": "un esquema de base de datos centralizado con una tabla unificada de calificaciones que sirva a todos los cursos y reportes",
+      "so_that": "pueda escribir una sola lógica de consulta reutilizable y eliminar los stored procedures duplicados por curso",
+      "acceptance_criteria": [
+        "Dado que se consultan calificaciones de cualquier curso del período 2025-2026, cuando se ejecuta la consulta, entonces proviene de la misma tabla o vista unificada y no de tablas independientes por curso.",
+        "Dado que se agrega un nuevo tipo de reporte, cuando se implementa, entonces reutiliza la lógica de consulta existente sin crear un nuevo stored procedure.",
+        "Dado que existe el esquema centralizado, cuando el desarrollador revisa la base de datos, entonces no existen tablas de calificaciones duplicadas ni fragmentadas por curso.",
+        "Dado que el esquema centralizado está diseñado, cuando el desarrollador lo valida antes de migrar, entonces existe una copia local de la base de datos de producción usada como entorno de validación (Supuesto: no existe ambiente de staging formal; la validación se realiza sobre copia local antes de aplicar en producción)."
+      ],
+      "estimate": 5,
+      "dependencies": [],
+      "open_questions": [],
+      "priority": 1,
+      "origin": [
+        "us:US-06",
+        "req:R-04",
+        "pain:informacion-no-centralizada",
+        "pain:sp-no-mantenibles"
+      ]
+    },
+    {
+      "id": "US-06a",
+      "epic": "E-01",
+      "as_a": "desarrollador",
+      "want": "migrar los datos de calificaciones del período 2025-2026 del esquema fragmentado actual al nuevo esquema centralizado sin pérdida de información",
+      "so_that": "los reportes del período 2025-2026 puedan generarse desde la fuente unificada sin depender de las tablas antiguas",
+      "acceptance_criteria": [
+        "Dado que existen calificaciones en el esquema fragmentado anterior, cuando se ejecuta la migración, entonces el 100 % de los registros del período 2025-2026 están presentes en el esquema centralizado.",
+        "Dado que se completa la migración, cuando se comparan los totales por curso entre el esquema antiguo y el nuevo, entonces los recuentos coinciden sin diferencia.",
+        "Dado que la migración se ejecuta, cuando se revisa el log, entonces no se registran errores de integridad referencial.",
+        "Dado que existen posibles inconsistencias en el esquema fragmentado, cuando el desarrollador ejecuta el script de validación previa a la migración, entonces obtiene un reporte de registros con datos vacíos o inconsistentes que él mismo revisa y limpia antes de correr la migración (Supuesto: la validación técnica la hace el desarrollador; la confirmación de una muestra de calificaciones del período 2025-2026 la realiza la secretaria antes de dar el visto bueno final)."
+      ],
+      "estimate": 5,
+      "dependencies": [
+        "US-06"
+      ],
+      "open_questions": [],
+      "priority": 2,
+      "origin": [
+        "mvp:riesgos·1",
+        "req:R-04",
+        "us:US-06",
+        "pain:informacion-no-centralizada"
+      ]
+    },
+    {
+      "id": "US-01",
+      "epic": "E-02",
+      "as_a": "secretaria",
+      "want": "que los cuadros de calificaciones muestren los nombres de las materias leídos dinámicamente desde la base de datos",
+      "so_that": "no tenga que detectar ni corregir inconsistencias de nombres manualmente antes de enviar los reportes al distrito",
+      "acceptance_criteria": [
+        "Dado que se genera un cuadro trimestral, cuando el sistema lo produce, entonces los nombres de las materias coinciden exactamente con los registrados en la base de datos, sin valores hardcoded en la plantilla.",
+        "Dado que un nombre de materia cambia en la base de datos, cuando se regenera el reporte, entonces el cambio se refleja sin modificar la plantilla.",
+        "Dado que se generan cuadros de distintos cursos, cuando se comparan los nombres de materias entre ellos, entonces provienen de la misma fuente de datos y no existen variantes textuales para la misma materia."
+      ],
+      "estimate": 3,
+      "dependencies": [
+        "US-06"
+      ],
+      "open_questions": [],
+      "priority": 3,
+      "origin": [
+        "us:US-01",
+        "req:R-01",
+        "pain:nombres-materias-quemados"
+      ]
+    },
+    {
+      "id": "US-02",
+      "epic": "E-02",
+      "as_a": "secretaria",
+      "want": "que corregir el layout o los datos de un reporte no altere los demás reportes del mismo período",
+      "so_that": "pueda revisar y aprobar cada documento de forma independiente sin miedo a romper otros reportes",
+      "acceptance_criteria": [
+        "Dado que se corrige y regenera el cuadro trimestral, cuando se visualizan el reporte de promoción y el cuadro final, entonces su layout y datos no han cambiado.",
+        "Dado que se actualiza el cuadro final, cuando se comparan con el reporte de promoción, entonces los nombres de materias y valores numéricos coinciden en ambos documentos.",
+        "Dado que se modifica la configuración de un curso específico, cuando se regeneran los reportes de otros cursos, entonces no presentan cambios no intencionados."
+      ],
+      "estimate": 3,
+      "dependencies": [
+        "US-01",
+        "US-05"
+      ],
+      "open_questions": [],
+      "priority": 4,
+      "origin": [
+        "us:US-02",
+        "req:R-02",
+        "pain:cambio-dana-otro-reporte"
+      ]
+    },
+    {
+      "id": "US-07",
+      "epic": "E-02",
+      "as_a": "rectora",
+      "want": "que los cuadros trimestrales, finales y reportes de promoción del período 2025-2026 estén disponibles y correctos antes del cierre de período",
+      "so_that": "pueda cumplir los compromisos de entrega de documentos académicos con el distrito a tiempo",
+      "acceptance_criteria": [
+        "Dado que es el cierre del período 2025-2026, cuando la secretaria revisa los reportes generados, entonces los aprueba en el primer ciclo de revisión sin devoluciones por inconsistencias de nombres o layout roto.",
+        "Dado que los reportes de segundo de básica a bachillerato son los críticos para el distrito, cuando se generan, entonces están disponibles y aprobados antes que los de inicial y básica inferior.",
+        "Dado que se genera cualquier reporte del período 2025-2026, cuando la secretaria lo imprime, entonces no requiere edición manual para enviarlo al distrito.",
+        "Dado que la fecha de cierre del período no está confirmada en el discovery, cuando el equipo inicia el sprint, entonces la rectora confirma la fecha exacta de entrega al distrito (Supuesto: la fecha límite es el 15 de julio de 2026; debe ser confirmada con la rectora al inicio del sprint)."
+      ],
+      "estimate": 2,
+      "dependencies": [
+        "US-01",
+        "US-02",
+        "US-03",
+        "US-08"
+      ],
+      "open_questions": [],
+      "priority": 5,
+      "origin": [
+        "us:US-07",
+        "mvp:resultado-esperado",
+        "mvp:metrica-exito",
+        "pain:documentos-urgentes-sin-entregar"
+      ]
+    },
+    {
+      "id": "US-05",
+      "epic": "E-03",
+      "as_a": "desarrollador",
+      "want": "una plantilla de reporte única y configurable por nivel y curso que sirva para cuadros trimestrales, finales y reportes de promoción",
+      "so_that": "cuando el Ministerio cambie los lineamientos solo tenga que actualizar un archivo y el cambio se propague a todos los cursos sin tocar plantillas individuales",
+      "acceptance_criteria": [
+        "Dado que existen N cursos, cuando se genera cualquier reporte, entonces todos comparten la misma plantilla base RDLC con parámetros configurables por curso, sin archivos RDLC separados por curso (Supuesto: se mantiene RDLC como motor de reportes y se refactoriza la estructura de plantillas hacia una única parametrizable; no se migra a otro motor).",
+        "Dado que se modifica la configuración de una materia en un curso, cuando se regeneran los reportes de ese curso, entonces el cambio se refleja sin afectar las plantillas de otros cursos.",
+        "Dado que el Ministerio actualiza un lineamiento de formato, cuando se edita la plantilla única, entonces todos los reportes generados a continuación reflejan el cambio sin intervención adicional."
+      ],
+      "estimate": 5,
+      "dependencies": [
+        "US-06"
+      ],
+      "open_questions": [],
+      "priority": 6,
+      "origin": [
+        "us:US-05",
+        "req:R-03",
+        "req:R-11",
+        "pain:rdlc-por-curso",
+        "pain:plantillas-no-dinamicas"
+      ]
+    },
+    {
+      "id": "US-08",
+      "epic": "E-04",
+      "as_a": "rectora",
+      "want": "que la lógica de calificaciones aplique automáticamente la escala correcta según el nivel educativo del estudiante",
+      "so_that": "los reportes no requieran ajustes manuales al cambiar de nivel y cumplan los lineamientos del Ministerio de Educación",
+      "acceptance_criteria": [
+        "Dado que se genera un cuadro de nivel inicial, cuando se visualiza, entonces muestra escalas cualitativas sin calificaciones numéricas.",
+        "Dado que se genera un cuadro de primero o segundo de básica, cuando se visualiza, entonces muestra la escala simbólica (+A / -A / B-) definida en R-05.",
+        "Dado que se genera un cuadro de tercero de básica en adelante o bachillerato, cuando se visualiza, entonces muestra calificaciones numéricas en la escala cuantitativa (Supuesto: escala de 0 a 10, aprobación con puntaje >= 7, conforme al reglamento del Ministerio de Educación; el desarrollador confirma los rangos exactos con la secretaria al inicio del sprint).",
+        "Dado que un estudiante cambia de nivel en el sistema, cuando se regenera su reporte, entonces aplica automáticamente la escala del nuevo nivel sin configuración manual."
+      ],
+      "estimate": 4,
+      "dependencies": [
+        "US-06",
+        "US-05"
+      ],
+      "open_questions": [],
+      "priority": 7,
+      "origin": [
+        "us:US-08",
+        "req:R-05",
+        "mvp:funcionalidades-minimas·4",
+        "pain:formato-reporte-inadecuado"
+      ]
+    },
+    {
+      "id": "US-03",
+      "epic": "E-04",
+      "as_a": "secretaria",
+      "want": "que los cuadros y reportes de promoción incluyan espacios designados para la firma del docente y dos sellos (colegio y distrito)",
+      "so_that": "pueda enviarlos al distrito sin modificaciones manuales en el documento impreso",
+      "acceptance_criteria": [
+        "Dado que se genera cualquier reporte del período 2025-2026, cuando se visualiza o imprime, entonces aparecen los espacios de firma del docente y los dos sellos (colegio y distrito) en la posición definida por el formato institucional.",
+        "Dado que el reporte contiene calificaciones de segundo de básica a bachillerato, cuando se envía al distrito, entonces el formato cumple los requisitos de presentación del distrito sin necesidad de edición adicional.",
+        "Dado que se imprimen reportes de distintos cursos, cuando se comparan los espacios de firma y sello, entonces su posición y tamaño son consistentes entre documentos.",
+        "Dado que no existen especificaciones formales del distrito para medidas y posición exacta de firma y sellos, cuando el desarrollador implementa el layout, entonces toma como referencia el formato que la secretaria usa actualmente y la secretaria valida el prototipo antes del sprint review (Supuesto: la posición y tamaño de firma y sellos se derivan del formato actual que edita manualmente la secretaria; no existe documento formal del distrito que los especifique)."
+      ],
+      "estimate": 3,
+      "dependencies": [
+        "US-05"
+      ],
+      "open_questions": [],
+      "priority": 8,
+      "origin": [
+        "us:US-03",
+        "req:R-06",
+        "mvp:funcionalidades-minimas·5",
+        "pain:formato-reporte-inadecuado"
+      ]
+    },
+    {
+      "id": "US-04",
+      "epic": "E-04",
+      "as_a": "secretaria",
+      "want": "que las secciones de escalas de calificación y comportamiento tengan jerarquía visual menor que los datos de calificaciones en el reporte impreso",
+      "so_that": "la información principal de calificaciones sea fácil de leer y el reporte no esté dominado por las tablas de escala",
+      "acceptance_criteria": [
+        "Dado que se genera e imprime un cuadro de calificaciones, cuando se visualiza, entonces la sección de calificaciones de los estudiantes ocupa más espacio visual que la sección de escalas de comportamiento.",
+        "Dado que el reporte es de nivel inicial o básica inferior, cuando se visualiza, entonces la escala cualitativa o simbólica aparece en tamaño tipográfico secundario (Supuesto: fuente de 10pt o menor para escalas vs. 12pt para calificaciones) y la sección de escalas ocupa como máximo el 25 % del área imprimible del reporte; la secretaria valida estas proporciones en demo antes del sprint review.",
+        "Dado que se comparan reportes de distintos cursos, cuando se imprimen, entonces la proporción visual entre datos de calificaciones y escalas es consistente en todos."
+      ],
+      "estimate": 2,
+      "dependencies": [
+        "US-05"
+      ],
+      "open_questions": [],
+      "priority": 9,
+      "origin": [
+        "us:US-04",
+        "req:R-10",
+        "pain:formato-reporte-inadecuado"
+      ]
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-01",
+      "description": "R-07: Generación de nómina de abanderados 2026-2027 — explícitamente fuera de alcance del MVP según mvp-canvas ('prioridad siguiente, no del cierre actual').",
+      "origin": ["req:R-07", "mvp:fuera-de-alcance"]
+    },
+    {
+      "id": "OQ-02",
+      "description": "R-08: Consolidar sistema interno y externo — explícitamente fuera de alcance del MVP según mvp-canvas.",
+      "origin": ["req:R-08", "mvp:fuera-de-alcance"]
+    },
+    {
+      "id": "OQ-03",
+      "description": "R-09: Mecanismo formal de comunicación de requerimientos secretaría→desarrollo — el pain está respaldado por el discovery pero la solución excede el módulo de reportes y no está en las funcionalidades mínimas del MVP.",
+      "origin": ["req:R-09", "pain:proceso-requerimientos-sin-claridad"]
+    },
+    {
+      "id": "OQ-04",
+      "description": "R-12: Cumplimiento Ley de Protección de Datos — el requisito existe pero el discovery no especifica qué datos personales se exponen ni qué controles aplican; requiere análisis legal previo.",
+      "origin": ["req:R-12"]
+    },
+    {
+      "id": "OQ-05",
+      "description": "R-13: Despliegue con Docker Compose — mencionado por el desarrollador y la rectora como deseable, pero el discovery no evidencia que la infraestructura actual lo soporte; requiere decisión arquitectónica (ADR) antes de comprometerse como historia.",
+      "origin": ["req:R-13"]
+    }
+  ]
+}
